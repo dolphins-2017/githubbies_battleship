@@ -4,35 +4,150 @@ import random
 
 class Player: #MIRA
 	def __init__(self, ships):
-		self.ships = ships
+	self.name = name
 
-		#Function - store player data
-		#name
-		#each players gameboard
-	pass
+	"""Player's ships: dict with ship name as key and 
+	[bool indicating whether ship has been placed, 
+		bool indicating whether ship has been sunk,
+	 	size of ship] as value"""
+	self.ships = {
+	"Carrier": [False, False, 5],
+	"Battleship" : [False, False, 4],
+	"Cruiser": [False, False, 3], 
+	"Destroyer" : [False, False, 2],
+	"Submarine" : [False, False, 3]}
 
-	self.ships = [[False, False, 5, "Carrier"], [False, False, 4, "Battleship"], [False, False, 3, "Cruiser"], [False, False,2,"Destroyer"], [False, False,3, "Submarine"]]
-		# ships should store their co-ords for position and points have have been hit
-		#ships has three arguments, a bool, ship size, and ship name
-	where_ships
-	miss_shots = []  #where the opp have fired and missed
-	shot_shots = [] #where you have shot
-	hit_shots = []  #where you have hit
-	ship_position = {"Carrier" : [[],[],[],[],[]],"Battleship": [[],[],[],[]], "Cruiser" : [[],[],[]], "Destroyer" : [[],[]], "Submarine" : [[],[],[]]}
+	"""Position of Player's ships: dict with ship name as key 
+	and list with all coords for ships as values"""
+	self.ship_position = {
+	"Carrier" : [],
+	"Battleship": [],
+	"Cruiser" : [],
+	"Destroyer" : [],
+	"Submarine" : []
+	}
+
+	self.opp_hits = [] #where opp has fired and hit
+	self.opp_misses = []  #where the opp have fired and missed
+	self.own_shots = [] #where you have shot
+	self.own_hit = []  #where you have hit
+	self.own_misses = []
+	
 
 class Game: #Mira and Andrew
 	def __init__(self, size):
 		self.size = size
+		self.players =[]
 
-	def instruction(self):
+	def play (self): 
+		self.setup()
+		self.run()
+
+	def run (self):
+		pass
+
+	def setup (self):
+		#display instructions
+		self.instructions(self)
+
+		#add players
+		player_count = self.get_number_of_players()
+		for i in range(player_count):
+			self.gen_player("Player #{}".format(i + 1))
+
+		#have each player place their ships
+		for player in self.players:
+			#assign coords to players self.ship_position
+
+			self.place_ships()
+
+	def instructions(self):
 		#print (<instructions>)
 		pass
 
-	def gen_player(self):
-	#create instances of players
-		pass
+	def get_number_of_players(self):
+		is_valid = False
+		while not is_valid:
+			player_count = input("How many players?\n")
+			if not player_count.isnumeric():
+				print("'{}' is not a whole number.\n Please enter a whole number.".format(player_count))
+			else:
+				is_valid = True
+		return int(player_count.strip())
+
+
+	def gen_player(self, title):
+		#create instances of players
+		name = ""
+		while not name:
+			name = input("{}, please enter your name: ".format(title))
+			name = name.strip()
+		self.players.append(Player(name))
+
+	def get_orienation(self):
+		#ask user for orientation of ship
+		is_valid = False
+		while not is_valid:
+			orientation = input("Would you like to place your ship vertically or horizontally? (Type 'v' or 'h') \n").lower()
+			if not player_count.isalpha():
+				print("'{}' is not a valid choice for the ship's orientation.\n Please enter either 'v' or 'h'.".format(orientation))
+			else:
+				is_valid = True
+
+		return orientation.strip()
+
+	def get_coord(self):
+		#get a valid coord from user
+		is_valid = False
+		while not is_valid:
+			coord = input("Please enter a starting coordinate for your ship to be placed. \n (The letter of the column followed by the row number \n without any spaces b/w the characters)) \n").lower()
+			if len(coord) != 2:
+				print("'{}' is not a valid choice for the ship's starting coordinatine.\n The letter of the column followed by the row number \n without any spaces b/w the characters.".format(coord))
+			elif not (coord[0]).isaplpha() and (coord[1]).isnumeric():
+				print("'{}' is not a valid choice for the ship's starting coordinatine.\n The letter of the column followed by the row number \n without any spaces b/w the characters.".format(coord))
+			else:
+				is_valid = True
+
+		return coord.strip()
+
+	def valid_coord(self, ship, coord, orientation):
+		#check if ship can be placed at given coordinates
+
+		columns = "abcdefghij"
+
+		col = coord[0]
+		col_index = columns.index(col)
+		row = coord[1]
+
+		ships = self.player.ships.items():
+		#find orientation
+		for ship in ships:
+			if ship_name == :
+				ship_size = 
+
+		if orientation == "v" and (col_index + ship_size) > 9:
+			return False
+		elif orientation == "h" and (row + ship_size) > 10:
+			return False
+		else:
+			#check if there is another ship there 
+
 
 	def place_ships(self):
+		#get coords, orientation, make sure coords are not already used, place ships
+		ships = self.player.ship_position
+		for ship in ships.keys():
+			is_valid = False
+			while not is_valid:
+				self.board.print_player_board()
+				print ("Place your " + str(ship))
+				orientation = self.get_orientation()
+				coord = self.get_coord()
+				is_valid = self.valid_goord(ship,coord, orientation)
+				
+
+
+
 		#For keys in dictionary - ship position,
 			#print Player board
 			#what is the starting coordinate for your ship
@@ -41,9 +156,6 @@ class Game: #Mira and Andrew
 				#if not - updated ship location
 				#if yes - prompt user
 
-	def check_winner(self):
-		#has any player won the game
-		pass
 
 	def gen_board(self):
 		#creates a new gameboard
@@ -52,6 +164,10 @@ class Game: #Mira and Andrew
 	def switch_players():
 		#this function recognizes the end of a turn, a changes players
 		pass
+
+	def is_game_over(self):
+		#check if all ships have been sunk 
+
 
 
 class Board: #Casey
