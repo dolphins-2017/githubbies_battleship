@@ -26,14 +26,24 @@ class Player: #MIRA
 		"Submarine" : []
 		}
 
-		self.hits = [] #where opp has fired and hit
-		self.misses = []  #where the opp have fired and missed
+		# self.opp_hits = [] #where opp has fired and hit
+		# self.opp_misses = []  #where the opp have fired and missed
+		# self.own_hits = []
+		# self.own_misses = []
+		self.hits = []
+		self.misses = []
 
 		#self.own_shots = [] #where you have shot
 		#self.own_hit = []  #where you have hit
 		#self.own_misses = []
 
+		#own hits, misses, opp's ships hidden
+		# board = Board(player)
+		# self.attack_board = Board.gen_attack_board()
+		# self.self_board = board.gen_self_board()
 
+		#your ships, opp's hits, opp's misses
+		#self.self_board = self_board
 	
 
 class Game: #Mira and Andrew
@@ -51,8 +61,10 @@ class Game: #Mira and Andrew
 
 		while not self.is_game_over():
 			current_player_idx = (current_player_idx + 1) % len(self.players)
+			#other_player_idx = (current_player_idx + 2) % len(self.players)
 			player = self.players[current_player_idx]
-			print("{} it is your turn. Your current score is {}".format(player.name, player.score))
+			#other_player = self.players[other_player_idx]
+			print("{} it is your turn. Your current score is {}".format(player.name))
 			
 			#print opponent's board (with hits and misses) ADD THIS IN!!
 
@@ -70,11 +82,15 @@ class Game: #Mira and Andrew
 		for i in range(player_count):
 			self.gen_player("Player #{}".format(i + 1))
 
-
+		#print (self.players)
 		#have each player place their ships
 		for player in self.players:
+			# ships = player.ship_position
+			# print (ships)
 			#assign coords to players self.ship_position, set boards
-			self.place_ships()
+			self.place_ships(player)
+
+
 
 	def instructions(self):
 	        print ("""Game Objective
@@ -105,6 +121,8 @@ class Game: #Mira and Andrew
 		while not name:
 			name = input("{}, please enter your name: ".format(title))
 			name = name.strip()
+		#board = Board()
+		# self_board = Board()
 		self.players.append(Player(name))
 
 	def get_orientation(self):
@@ -112,7 +130,7 @@ class Game: #Mira and Andrew
 		is_valid = False
 		while not is_valid:
 			orientation = input("Would you like to place your ship vertically or horizontally? (Type 'v' or 'h') \n").lower()
-			if not player_count.isalpha():
+			if not orientation.isalpha():
 				print("'{}' is not a valid choice for the ship's orientation.\n Please enter either 'v' or 'h'.".format(orientation))
 			else:
 				is_valid = True
@@ -127,25 +145,29 @@ class Game: #Mira and Andrew
 			if len(coord) != 2:
 				print("'{}' is not a valid choice for the ship's starting coordinate.\n").format(coord) 
 				coord = input("The letter of the column followed by the row number \n without any spaces b/w the characters.\n")
-			elif not (coord[0]).isaplpha() and (coord[1]).isnumeric():
+			elif not (coord[0]).isalpha() and (coord[1]).isnumeric():
 				print("'{}' is not a valid choice for the ship's starting coordinate.\n").format(coord) 
 				coord = input("The letter of the column followed by the row number \n without any spaces b/w the characters.\n")
 			else:
 				is_valid = True
 
-		return coord.strip()
+		stripped_coord = coord.strip()
+		list_coord = []
+		for char in stripped_coord:
+			list_coord.append(char)
+		return list_coord
 
-	def valid_coord(self, ship_name, coord, orientation):
+	def valid_coord(self, player, ship_name, coord, orientation):
 		#check if ship can be placed at given coordinates
 
-		columns = "abcdefghij"
+		columns = "ABCDEFGHIJ"
 
 		col = coord[0]
 		col_index = columns.index(col)
 		row = coord[1]
 
 
-		ships = self.player.ships.items()
+		ships = player.ships.items()
 
 		#find ship size
 		for ship, info in ships:
@@ -159,12 +181,16 @@ class Game: #Mira and Andrew
 			for i in range(ship_size):
 				col_coord = columns[col_index + i]
 				row_coord = row + i
-				possible_coord = col + str(row_coord)
+				possible_coord = []
+				possible_coord.append(col)
+				possible_coord.append(str(row_coord))
 				possible_coords.append(possible_coord)
 		else:
 			for i in range(ship_size):
 				col_coord = columns[col_index + i]
-				possible_coord = col_coord + str(row)
+				possible_coord = []
+				possible_coord.append(col_coord)
+				possible_coord.append(str(row))
 				possible_coords.append(possible_coord)
 
 		if orientation == "v" and (col_index + ship_size) > 9:
@@ -173,7 +199,7 @@ class Game: #Mira and Andrew
 			return False
 		else:
 			#check if there is another ship there 
-			positions = self.player.ship_position
+			positions = player.ship_position
 			for coords in positions.values():
 				for position in coords:
 					if position in possible_coords:
@@ -183,7 +209,7 @@ class Game: #Mira and Andrew
 
 
 
-	def place_ships(self):
+	def place_ships(self, player):
 		"""
 			For keys in dictionary - ship position,
 			print Player board
@@ -196,48 +222,65 @@ class Game: #Mira and Andrew
 
 		#get coords, orientation, make sure coords are not already used, place ships
 		#parent and child classes?
+		#find ship size
+
 		ships = player.ship_position
+		ship_info = player.ships
+
+
 		for ship in ships.keys():
-			is_valid = False
-			while not is_valid:
-				self.board.print_player_board()
+			#find ship size
+			for ship, info in ship_info.items():
+				ship_size = info[1]
 
-				print ("Place your " + str(ship))
-				orientation = self.get_orientation()
-				coord = self.get_coord()
-				is_valid = self.valid_coord(ship,coord, orientation)
+				is_valid = False
+				while not is_valid:
+					#board.generate_blank_board()
 
-				#if the loop gets here, is_valid is still False
-				print ("Your ship cannot be placed there. Please try again.")
 
-				#this would make the user place all of their ships again...
-				self.place_ships()
+					print ("Place your " + str(ship) + "\n which has a size of " + str(ship_size) + " tiles.")
+					orientation = self.get_orientation()
+					coord = self.get_coord()
+					is_valid = self.valid_coord(player, ship, coord, orientation)
+
+					#if the loop gets here, is_valid is still False
+					print ("Your ship cannot be placed there. Please try again.")
+
+					#this would make the user place all of their ships again...
+					self.place_ships()
 
 			#get all coords of ship 
+
+
 			coords = []
 			if orientation == "v":
 				for i in range(ship_size):
 					col_coord = columns[col_index + i]
 					row_coord = row + i
-					possible_coord = col + str(row_coord)
+					possible_coord = []
+					possible_coord.append(col)
+					possible_coord.append(str(row_coord))
 					coords.append(possible_coord)
 			else:
 				for i in range(ship_size):
 					col_coord = columns[col_index + i]
-					possible_coord = col_coord + str(row)
+					possible_coord = []
+					possible_coord.append(col_coord)
+					possible_coord.append(str(row))
 					coords.append(possible_coord)
 
 			#add list of all coords as value for corresponding ship key
 			ships[ship] = coords
 
 		#generate board with placed ship, store it with player
-		self.player.own_board = self.gen_board(ships)
+		self.gen_board(player)
 
 	def gen_board(self, player):
-
-		self.board.generate_blank_board()
-
-	def is_game_over(self):
+		board = Board(player)
+		board.gen_self_board()
+		board.print_self_board()
+		
+	def is_game_over(self, player):
 		"""
 		#check if all ships have been sunk
 		#hits match up with ship positions, 
@@ -249,7 +292,7 @@ class Game: #Mira and Andrew
 		if total number of hits == 17/ "X's" = 17, then game is over
 		"""
 		is_active = True
-		hits = self.player.hits
+		hits = player.hits
 
 		#Review - length or sum?
 		if len(hits) > 17:
@@ -259,51 +302,80 @@ class Game: #Mira and Andrew
 
 
 class Board: #Casey
-	def __init__(self, size):
-		self.size = size
 
-	def generate_blank_board(self):
+	def __init__(self, player):
+		self.hits = player.hits 
+		self.misses = player.misses 
+		self.ship_position = player.ship_position
 
-		blank_board = {'A': {'1': '~', '2': '~','3': '~','4' : '~' , '5': '~', '7': '~', '6': '~', '8' : '~', '9' : '~'},
-	    'B': {'1': '~', '2': '~','3': '~','4' : '~', '5': '~', '7': '~', '6': '~', '8' : '~', '9' : '~'},
-	    'C': {'1': '~', '2': '~','3': '~','4' : '~', '5': '~', '7': '~', '6': '~', '8' : '~', '9' : '~'},
-	    'D': {'1': '~', '2': '~','3': '~','4' : '~', '5': '~', '7': '~', '6': '~', '8' : '~', '9' : '~'},
-	    'E': {'1': '~', '2': '~','3': '~','4' : '~', '5': '~', '7': '~', '6': '~', '8' : '~', '9' : '~'},
-	    'F': {'1': '~', '2': '~','3': '~','4' : '~', '5': '~', '7': '~', '6': '~', '8' : '~', '9' : '~'},
-	    'G': {'1': '~', '2': '~','3': '~','4' : '~', '5': '~', '7': '~', '6': '~', '8' : '~', '9' : '~'},
-		'H': {'1': '~', '2': '~','3': '~','4' : '~', '5': '~', '7': '~', '6': '~', '8' : '~', '9' : '~'},
-		'I': {'1': '~', '2': '~','3': '~','4' : '~', '5': '~', '7': '~', '6': '~', '8' : '~', '9' : '~'}}
+		self.blank_board = [{1:None, 2:None, 3:None, 4:None, 5:None, 6:None, 7:None, 8:None, 9:None, 0:None},
+		{1:None, 2:None, 3:None, 4:None, 5:None, 6:None, 7:None, 8:None, 9:None, 0:None},
+		{1:None, 2:None, 3:None, 4:None, 5:None, 6:None, 7:None, 8:None, 9:None, 0:None},
+		{1:None, 2:None, 3:None, 4:None, 5:None, 6:None, 7:None, 8:None, 9:None, 0:None},
+		{1:None, 2:None, 3:None, 4:None, 5:None, 6:None, 7:None, 8:None, 9:None, 0:None},
+		{1:None, 2:None, 3:None, 4:None, 5:None, 6:None, 7:None, 8:None, 9:None, 0:None},
+		{1:None, 2:None, 3:None, 4:None, 5:None, 6:None, 7:None, 8:None, 9:None, 0:None},
+		{1:None, 2:None, 3:None, 4:None, 5:None, 6:None, 7:None, 8:None, 9:None, 0:None},
+		{1:None, 2:None, 3:None, 4:None, 5:None, 6:None, 7:None, 8:None, 9:None, 0:None},
+		{1:None, 2:None, 3:None, 4:None, 5:None, 6:None, 7:None, 8:None, 9:None, 0:None},]
+		
+		self.reference_dict = {'A':0,'B':1,'C':2,'D':3,'E':4,'F':5,'G':6,'H':7,'I':8,'J':9}
 
-		board = blank_board
+		self.board = self.blank_board
+		self.save_board = self.blank_board
 
-		print (board)
-		strs = "{0:^2} {1:^2} {2:^2} {3:^2} {4:^2} {5:^2} {6:^2} {6:^2} {7:^2} {8:^2} {9:^2} "    
+		[[a,5],]
+	def add_hits(self):
 
-		print (strs.format(" ", *sorted(board)))
+		for item in self.hits: 
+			if self.board[self.reference_dict[item[0]]][item[1]] is None: 
+				self.board[self.reference_dict[item[0]]][item[1]] = "X"
+		return self.board
 
-		for x in sorted(blank_board):
-			print (strs.format(x, *(blank_board[x].get(y, "~" ) for y in sorted(blank_board))))
+	def add_ships(self):
+		for item in self.ship_position: 
+			self.board[self.reference_dict[item[0]]][item[1]] = "[ ]"
+		return self.board
 
-	def print_player_board(self):
-		#function is to, after every turn, print the current status of each players board.
-		#call:
-			#player1 ships
-			#other player missed shots
-			#other player hit shots
-		#display board
-		pass
+	def add_misses(self):
+		for item in self.misses: 
+			if self.board[self.reference_dict[item[0]]][item[1]] is None: 
+				self.board[self.reference_dict[item[0]]][item[1]] = "O"
+		return self.board
 
-	def print_opp_board(self):
-		#function is to, after every turn, print the current status of each players board.
-		#call:
-			# player1 missed shots
-			# player1 hit shots
-		#display board
-		pass
+	def fill_ocean():
+		for item in self.board:
+			if self.board[item[item]] is None: 
+				self.board[item[item]] = "~"
+		return self.board
+
+	def gen_attack_board(self):
+		self.add_hits() #these are the player hits
+		self.add_misses() #these are the player misses
+		self.fill_ocean()
+		player.attack_board = self.board
+		return player.attack_board
+
+
+	def gen_self_board(self):
+		self.add_ships()
+		self.fill_ocean()
+		player.self_board = self.board
+		self.board = self.blank_board
+		return player.self_board
+
+	def print_attack_board(self):
+		print(self.gen_attack_board)
+
+	def print_self_board(self):
+		print(self.gen_self_board)
+
 
 class Turn: #Jimmy
-	def __init__(self, player):
+	def __init__(self, player, other_player):
 		self.player = player
+		self.other_player = other_player
+		#self.other_player = other_player
 		self.hit_or_miss()
 
 	#call the opp board function 
@@ -324,6 +396,9 @@ class Turn: #Jimmy
 	def attack_Command (self): 
 		#Realize which player turn it is so attacks can call on the opposing board
 		
+		#display opp's board
+		own_board = self.other_player.gen_self_board()
+		board = self.player.gen_attack_board()
 		is_valid = False
 		hits = self.player.hits
 		misses = self.player.misses
@@ -341,24 +416,13 @@ class Turn: #Jimmy
 			else:
 				is_valid = True
 
-		return attack
+		stripped_attack = attack.strip()
+		list_attack = []
+		for char in stripped_attack:
+			list_attack.append(char)
+		return list_attack
 
 
-		"""
-		while attack and is False: 		
-			if attack == board.tile:
-				found = True
-			else: 
-				current = current.next
-		if attack is None:
-			raise Exception("Not a valid tile")
-		"""
-
-		#return 
-			#if value isn't a valid tile, or if value has already been called in previous round
-			
-			
-			#User will input coordinates, each coordinate corresponds with a dictionary value?
 		
 	def hit_or_miss (self):
 
@@ -374,38 +438,20 @@ class Turn: #Jimmy
 		else:
 			misses.append(attack)
 			print ("Miss!")
-		"""
 
+		self.player.gen_attack_board()
 
 		
 
-		if attack is in #boat location in dict on opposing board: 
-			#append list? Not sure I get how the list of hits and misses is supposed to work
-			#in relation to the dictionary of values
-			print ("Hit!")
+		#take their hit or miss board, pass to opponent, opponent adds ships at beginning 		
 
-			else if attack is not in #boat location in dict on opposing board:
-				#append list? See above comment
-				print ("Miss!")			
-	#call the opp board function 
-	#prompt user for where they would like to shoot
-	#user input the co-ords
-		#check if a ship is there
-		#check to see if ship is sunk
-		#if yes,
-			#adjust the hit list
-			#adjust the ship list
-		#if no,
-			#adjust the miss list	
-	#tell user what the result of the attack was
-	
 
-"""
-
+	"""
 	def check_ships (self):
 			#if ship is sunk:
 		#say which ship is sunk
 		pass
+	"""
 	
 
 
